@@ -1,9 +1,9 @@
 /*
  * References
- * 
+ *
  * mqtt_auth by Ian Tester (originally by Nicholas O'Leary)
  * https://github.com/Imroy/pubsubclient/blob/master/examples/mqtt_auth/mqtt_auth.ino
- * 
+ *
  * bme280_test by Embedded Adventures
  * https://github.com/embeddedadventures/BME280/blob/master/examples/bme280_test/bme280_test.ino
  */
@@ -84,6 +84,11 @@ void setup() {
 
   // BME280の補償値を読み取る
   BME280.readCompensationParams();
+
+  // オーバーサンプリングの回数を設定
+  BME280.writeOversamplingTemperature(os1x);
+  BME280.writeOversamplingHumidity(os1x);
+  BME280.writeOversamplingPressure(os1x);
 }
 
 void loop() {
@@ -118,7 +123,8 @@ void loop() {
 
   // クライアントがICDF Cloudのサーバに接続されていたら以下の処理を実行
   if (client.connected()) {
-    // BME280の計測が終わるのを待つ
+    // BME280を1度だけ測定を行うモードに設定し計測が終わるまで待機
+    BME280.writeMode(smForced);
     while (BME280.isMeasuring()) {
       delay(1);
     }
