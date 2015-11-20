@@ -1,39 +1,36 @@
-/*
- * References
- * 
- * mqtt_subscriber by Ian Tester (originally by Nicholas O'Leary)
- * https://github.com/Imroy/pubsubclient/tree/master/examples/mqtt_subscriber
- */
-
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 #include "config.h"
 
-#define BUFFER_SIZE 100
-
 // メッセージを受け取ったらシリアルにプリント
-void callback(const MQTT::Publish& pub) {
-  Serial.print(pub.topic());
-  Serial.print(" => ");
-  if (pub.has_stream()) {
-    // ペイロードのサイズが大きい場合にはローカルに用意したバッファに分割して読み取り
-    // 読み取った単位ごとにシリアルにプリント
-    uint8_t buf[BUFFER_SIZE];
-    int read;
-    while (read = pub.payload_stream()->read(buf, BUFFER_SIZE)) {
-      Serial.write(buf, read);
-    }
-    pub.payload_stream()->stop();
-    Serial.println();
-  } else {
-    // ペイロードのサイズが小さい場合にはそのままシリアルにプリント
-    Serial.println(pub.payload_string());
+void callback(char* topic, byte* payload, unsigned int length) {
+  // PubSubClient.hで定義されているMQTTの最大パケットサイズ
+  char buffer[MQTT_MAX_PACKET_SIZE];
+
+  snprintf(buffer, sizeof(buffer), "%s", payload);
+  Serial.print("Received: ");
+  Serial.println(buffer);
+
+  // 受け取ったJSON形式のペイロードをデコードする
+  StaticJsonBuffer<MQTT_MAX_PACKET_SIZE> jsonBuffer;
+  JsonObject& root = jsonBuffer.parseObject(buffer);
+
+  if (!root.success()) {
+    Serial.println("parseObject() failed");
+    return;
+  }
+
+  const char* parsedPayload = root["data"]["payload"];
+  if (parsedPayload != NULL) {
+    Serial.print("payload: ");
+    Serial.println(parsedPayload);
   }
 }
 
-WiFiClient wclient;
-PubSubClient client(wclient, server);
+WiFiClient wifiClient;
+PubSubClient client(wifiClient);
 
 void setup() {
   Serial.begin(115200);
@@ -50,23 +47,33 @@ void loop() {
     WiFi.begin(ssid, pass);
 
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+      // Wi-Fiアクスポイントへの接続に失敗したら5秒間待ってリトライ
+      delay(5000);
       return;
+    } else {
+      Serial.print("WiFi connected: ");
+      Serial.println(WiFi.localIP());
+      client.setServer(server, 1883);
     }
-    Serial.println("WiFi connected");
   }
 
+  // クライアントがサーバに接続されていなければ
   if (!client.connected()) {
     // アクション1のUUIDとトークンをユーザ名およびパスワードとしてサーバに接続
-    MQTT::Connect mqttConnect(mqtt_client_id);
-    mqttConnect.set_auth(action_1_uuid, action_1_token);
+    client.connect(mqtt_client_id, action_1_uuid, action_1_token);
 
-    if (client.connect(mqttConnect)) {
-      client.set_callback(callback);
+    if (client.connected()) {
+      Serial.print("MQTT connected: ");
+      Serial.println(server);
+      client.setCallback(callback);
       client.subscribe(action_1_uuid);
+    } else {
+      Serial.print("MQTT connection failed: ");
+      Serial.println(client.state());
+      delay(5000);
     }
-  }
-
-  if (client.connected()) {
+  } else {
+    // 既にサーバに接続されていれば通常処理を行う
     client.loop();
   }
 }
