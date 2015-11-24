@@ -1,22 +1,19 @@
-/*
- * References
- *
- * mqtt_auth by Ian Tester (originally by Nicholas O'Leary)
- * https://github.com/Imroy/pubsubclient/blob/master/examples/mqtt_auth/mqtt_auth.ino
- *
- * bme280_test by Embedded Adventures
- * https://github.com/embeddedadventures/BME280/blob/master/examples/bme280_test/bme280_test.ino
- */
 #include <Wire.h>
 
 #include <ESP8266WiFi.h>
-#include <BME280_MOD-1022.h>
 
+// HDC1000を扱うためのライブラリ
+#include <Adafruit_HDC1000.h>
+
+// 設定ファイル
 #include "config.h"
+
+WiFiClient wifiClient;
+
+Adafruit_HDC1000 hdc1000 = Adafruit_HDC1000();
 
 float temperature = 0.0;
 float humidity = 0.0;
-float pressure = 0.0;
 
 void printFormattedFloat(float val) {
   char buffer[10];
@@ -28,33 +25,41 @@ void printFormattedFloat(float val) {
 void setup() {
   // I2Cの通信を開始
   // SDA: DIO4
-  // SCL: DIO14
-  Wire.begin(4, 14);
+  // SCL: DIO5
+  Wire.begin();
 
   // シリアル通信を開始
   Serial.begin(115200);
+  delay(10);
+  Serial.println();
+  Serial.println();
 
-  // BME280の補償値を読み取る
-  BME280.readCompensationParams();
-
-  // オーバーサンプリングの回数を設定
-  BME280.writeOversamplingTemperature(os1x);
-  BME280.writeOversamplingHumidity(os1x);
-  BME280.writeOversamplingPressure(os1x);
+  // HDC1000を設定
+  hdc1000.begin();
 }
 
 void loop() {
-  // BME280を1度だけ測定を行うモードに設定し計測が終わるまで待機
-  BME280.writeMode(smForced);
-  while (BME280.isMeasuring()) {
-    delay(1);
+  // Wi-Fiアクセスポイントに接続していなければ接続
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.print("Connecting to ");
+    Serial.print(ssid);
+    Serial.println("...");
+    WiFi.begin(ssid, password);
+
+    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+      // Wi-Fiアクスポイントへの接続に失敗したら5秒間待ってリトライ
+      Serial.println("Failed to connect");
+      delay(5000);
+      return;
+    } else {
+      Serial.print("WiFi connected: ");
+      Serial.println(WiFi.localIP());
+    }
   }
 
-  // BME280から測定値を読み取る
-  BME280.readMeasurements();
-  temperature = BME280.getTemperature();
-  humidity = BME280.getHumidity();
-  pressure = BME280.getPressure();
+  // HDC1000から測定値を読み取る
+  temperature = hdc1000.readTemperature();
+  humidity = hdc1000.readHumidity();
 
   // 読み取った温度をシリアルにプリント
   Serial.print("Temperature: ");
@@ -63,22 +68,6 @@ void loop() {
 
   // もし現在の温度が閾値よりも高ければ以下を実行
   if (temperature > threshold) {
-    if (WiFi.status() != WL_CONNECTED) {
-      Serial.print("Connecting to ");
-      Serial.print(ssid);
-      Serial.println("...");
-      WiFi.begin(ssid, password);
-
-      if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-        Serial.println("Failed");
-        return;
-      } else {
-        Serial.println("WiFi connected");
-        Serial.println("IP address: ");
-        Serial.println(WiFi.localIP());
-      }
-    }
-
     Serial.print("Connecting to ");
     Serial.println(host);
     WiFiClient client;
