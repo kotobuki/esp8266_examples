@@ -44,10 +44,11 @@ void loop() {
     Serial.print("Connecting to ");
     Serial.print(ssid);
     Serial.println("...");
-    WiFi.begin(ssid, pass);
+    WiFi.begin(ssid, password);
 
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
       // Wi-Fiアクスポイントへの接続に失敗したら5秒間待ってリトライ
+      Serial.println("Failed to connect");
       delay(5000);
       return;
     } else {
