@@ -9,3 +9,4 @@ const char* trigger_1_token = "********";
 
 // トリガーをかける温度の閾値
 const float threshold = 27.0;
+
