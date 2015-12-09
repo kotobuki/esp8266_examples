@@ -3,7 +3,7 @@ const char* ssid = "********";
 const char* password = "********";
 
 // IDCFチャンネルサーバの情報
-const char* host = "210.***.***.***";
+const char* server = "210.***.***.***";
 const char* trigger_1_uuid = "********-****-****-****-************";
 const char* trigger_1_token = "********";
 

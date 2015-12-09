@@ -69,9 +69,9 @@ void loop() {
   // もし現在の温度が閾値よりも高ければ以下を実行
   if (temperature > threshold) {
     Serial.print("Connecting to ");
-    Serial.println(host);
+    Serial.println(server);
     WiFiClient client;
-    if (!client.connect(host, 80)) {
+    if (!client.connect(server, 80)) {
       Serial.println("Connection failed");
       return;
     }
@@ -80,7 +80,7 @@ void loop() {
     String url = "/data/";
     url += trigger_1_uuid;
     client.print(String("POST ") + url + " HTTP/1.1\r\n" +
-                 "Host: " + host + "\r\n" +
+                 "Host: " + server + "\r\n" +
                  "meshblu_auth_uuid: " + trigger_1_uuid + "\r\n" +
                  "meshblu_auth_token: " + trigger_1_token + "\r\n" +
                  "Connection: close\r\n\r\n");
