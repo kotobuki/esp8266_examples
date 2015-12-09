@@ -1,5 +1,5 @@
 // MQTTのクライアントID（ユニークにするためにスケッチをコンパイルした日付と時刻を使用）
-const char *mqtt_client_id = "subscriber" __DATE__ __TIME__;
+const char *mqtt_client_id = "Bezelie" __DATE__ __TIME__;
 
 // Wi-FiアクセスポイントのSSIDとパスワード
 const char *ssid = "********";
