@@ -3,7 +3,7 @@
 
 #include <ESP8266WiFi.h>
 
-// PubSubClientライブラリでのパケットサイズは128バイトなのを拡張
+// Expand the max packet size from PubSubClient's default (i.e. 128 bytes)
 #define MQTT_MAX_PACKET_SIZE 1024
 #include <PubSubClient.h>
 
@@ -13,9 +13,9 @@
 
 const char* host = "mqtt.beebotte.com";
 
-// メッセージを受け取ったらシリアルにプリント
+// Print a received message
 void callback(char* topic, byte* payload, unsigned int length) {
-  // PubSubClient.hで定義されているMQTTの最大パケットサイズ
+  // A buffer to receive a message
   char buffer[MQTT_MAX_PACKET_SIZE];
 
   snprintf(buffer, sizeof(buffer), "%s", payload);
@@ -24,7 +24,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.println(topic);
   Serial.println(buffer);
 
-  // 受け取ったJSON形式のペイロードをデコードする
+  // Decode the received message in JSON format
   StaticJsonBuffer<MQTT_MAX_PACKET_SIZE> jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(buffer);
 
@@ -56,7 +56,6 @@ void loop() {
     WiFi.begin(ssid, password);
 
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-      // Wi-Fiアクスポイントへの接続に失敗したら5秒間待ってリトライ
       Serial.println("failed to connect");
       delay(5000);
       return;
@@ -66,9 +65,9 @@ void loop() {
     }
   }
 
-  // クライアントがサーバに接続されていなければ
+  // If the client is not connected to the server
   if (!client.connected()) {
-    // ユーザ名を指定して接続
+    // Try connecting to the server
     String username = "token:";
     username += channelToken;
     client.connect(clientID, username.c_str(), NULL);
@@ -77,7 +76,7 @@ void loop() {
       Serial.println("MQTT connected");
       client.setCallback(callback);
 
-      // トピック名を指定してsubscribe
+      // Subscribe to topic
       client.subscribe(topic);
     } else {
       Serial.print("MQTT connection failed: ");
@@ -120,7 +119,9 @@ void loop() {
       delay(5000);
     }
   } else {
-    // 既にサーバに接続されていれば通常処理を行う
+    // This should be called regularly to allow the client 
+    // to process incoming messages 
+    // and maintain its connection to the server
     client.loop();
   }
 }
