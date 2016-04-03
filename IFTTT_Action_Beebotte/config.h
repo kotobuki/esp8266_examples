@@ -1,13 +1,13 @@
-// Wi-FiアクセスポイントのSSIDとパスワード
-const char *ssid = "********";
-const char *password = "********";
+// The SSID and password of your Wi-Fi access point
+const char* ssid = "********";
+const char* password = "********";
 
-// クライアントID
-const char *clientID = "ESP8266";
-
-// Beebotteのチャンネルトークン
+// Your channel token at Beebotte
 const char* channelToken = "******************************";
 
-// トピック名（"channel/resource"の形式）
+// Your client ID
+const char *clientID = "ESP8266";
+
+// Your topic name (in "channel/resource" format)
 const char* topic = "ifttt/action";
 
