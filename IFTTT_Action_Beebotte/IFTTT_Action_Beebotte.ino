@@ -11,9 +11,27 @@
 
 #include "config.h"
 
+// Your client ID
+const char* clientID = "ESP8266";
+
+// The Beebotte server
 const char* host = "mqtt.beebotte.com";
 
-// Print a received message
+// Edit for your application
+void messageReceived(const String message) {
+  // Do something with the string
+  // e.g.
+  // if (message.equals("Something")) {
+  //
+  // }
+  // if (message.startsWith("Something")) {
+  //
+  // }
+  // See also
+  // https://www.arduino.cc/en/Tutorial/StringComparisonOperators
+}
+
+// Handle a received message
 void callback(char* topic, byte* payload, unsigned int length) {
   // A buffer to receive a message
   char buffer[MQTT_MAX_PACKET_SIZE];
@@ -35,8 +53,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   const char* parsedPayload = root["data"];
   if (parsedPayload != NULL) {
-    Serial.print("payload: ");
-    Serial.println(parsedPayload);
+    messageReceived(String(parsedPayload));
   }
 }
 
@@ -119,8 +136,8 @@ void loop() {
       delay(5000);
     }
   } else {
-    // This should be called regularly to allow the client 
-    // to process incoming messages 
+    // This should be called regularly to allow the client
+    // to process incoming messages
     // and maintain its connection to the server
     client.loop();
   }

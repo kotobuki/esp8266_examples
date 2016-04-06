@@ -2,12 +2,9 @@
 const char* ssid = "********";
 const char* password = "********";
 
-// Your channel token at Beebotte
+// Your secret channel token at Beebotte (https://beebotte.com/)
 const char* channelToken = "******************************";
 
-// Your client ID
-const char *clientID = "ESP8266";
-
-// Your topic name (in "channel/resource" format)
+// Your topic name at Beebotte (in "channel/resource" format)
 const char* topic = "ifttt/action";
 
