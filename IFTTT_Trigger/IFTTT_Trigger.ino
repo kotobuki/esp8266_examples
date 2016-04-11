@@ -5,8 +5,8 @@
 #include "config.h"
 
 // Constants
-const char* host = "maker.ifttt.com";
-const char* event   = "ping";
+const char host[] = "maker.ifttt.com";
+const char event[] = "ping";
 const int httpsPort = 443;
 const int buttonPin = 4;
 

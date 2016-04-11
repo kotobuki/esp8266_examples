@@ -12,10 +12,10 @@
 #include "config.h"
 
 // Your client ID
-const char* clientID = "ESP8266";
+const char clientID[] = "ESP8266";
 
 // The Beebotte server
-const char* host = "mqtt.beebotte.com";
+const char host[] = "mqtt.beebotte.com";
 
 // Edit for your application
 void messageReceived(const String message) {
